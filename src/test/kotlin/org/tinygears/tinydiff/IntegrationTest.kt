@@ -30,6 +30,7 @@ import java.util.function.BiPredicate
 import kotlin.io.path.name
 import kotlin.io.path.outputStream
 import kotlin.io.path.readText
+import kotlin.streams.toList
 
 class IntegrationTest {
 
