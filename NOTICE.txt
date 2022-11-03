@@ -1,0 +1,7 @@
+tinydiff
+Copyright (c) 2022 Thomas Neidhart.
+
+This software contains parts that were developed by CS Systèmes d'information
+and which have been published under the Apache License v2.0.
+
+Original copyright is: Copyright 2002-2012 CS Systèmes d'Information.
