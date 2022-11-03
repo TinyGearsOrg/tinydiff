@@ -68,9 +68,9 @@ internal class UnifiedDiffFormatter constructor(private val ps:      PrintStream
         ps.print(prefix)
         ps.print(' ')
         ps.print(fileName)
-        ps.print('\t')
         val file = File(fileName)
         if (file.exists()) {
+            ps.print('\t')
             val modificationDate = Date(file.lastModified())
             val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z")
             ps.print(dateFormat.format(modificationDate))
