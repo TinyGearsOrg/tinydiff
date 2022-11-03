@@ -53,7 +53,7 @@ internal interface EditCommand<T> {
 /**
  * Command representing the deletion of one object of the first sequence.
  */
-internal class DeleteCommand<T> constructor(private val obj: T): EditCommand<T> {
+internal data class DeleteCommand<T> constructor(private val obj: T): EditCommand<T> {
     /**
      * Accept a [CommandVisitor].
      * @param visitor  the visitor to be accepted
@@ -70,7 +70,7 @@ internal class DeleteCommand<T> constructor(private val obj: T): EditCommand<T> 
 /**
  * Command representing the insertion of one object of the second sequence.
  */
-internal class InsertCommand<T> constructor(private val obj: T): EditCommand<T> {
+internal data class InsertCommand<T> constructor(private val obj: T): EditCommand<T> {
     /**
      * Accept a [CommandVisitor].
      * @param visitor  the visitor to be accepted
@@ -87,7 +87,7 @@ internal class InsertCommand<T> constructor(private val obj: T): EditCommand<T> 
 /**
  * Command representing the keeping of one object present in both sequences.
  */
-internal class KeepCommand<T> constructor(private val origObj: T?, private val modifiedObj: T?): EditCommand<T> {
+internal data class KeepCommand<T> constructor(private val origObj: T?, private val modifiedObj: T?): EditCommand<T> {
     /**
      * Accept a [CommandVisitor].
      * @param visitor  the visitor to be accepted

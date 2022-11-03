@@ -19,7 +19,7 @@ package org.tinygears.tinydiff.algorithm
  * This class gathers all the [commands][EditCommand] needed to transform
  * one sequence into another sequence.
  */
-internal class EditScript<T> private constructor(private val commands: MutableList<EditCommand<T>> = mutableListOf()) {
+internal data class EditScript<T> constructor(private val commands: MutableList<EditCommand<T>> = mutableListOf()) {
     /**
      * Get the length of the Longest Common Subsequence (LCS). The length of the
      * longest common subsequence is the number of [keep][KeepCommand] in the script.

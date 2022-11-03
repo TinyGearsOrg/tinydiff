@@ -28,9 +28,9 @@ import java.util.regex.Pattern
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
-class Patch internal constructor(        val originalFileName: String?,
-                                         val updatedFileName:  String?,
-                                 private val editScript:       EditScript<String>) {
+data class Patch internal constructor(        val originalFileName: String?,
+                                              val modifiedFileName: String?,
+                                      private val editScript:       EditScript<String>) {
 
     internal fun accept(visitor: CommandVisitor<String>) {
         editScript.accept(visitor)
@@ -159,6 +159,10 @@ class Patch internal constructor(        val originalFileName: String?,
                 return Patch(origFileName, newFileName, script)
             }
         }
+    }
+
+    override fun toString(): String {
+        return "Patch[orig=$originalFileName,modified=$modifiedFileName,script=$editScript]"
     }
 }
 

@@ -56,8 +56,8 @@ internal class UnifiedDiffFormatter constructor(private val ps:      PrintStream
         if (patch.originalFileName != null) {
             formatFileName(patch.originalFileName, "---", ps)
         }
-        if (patch.updatedFileName != null) {
-            formatFileName(patch.updatedFileName, "+++", ps)
+        if (patch.modifiedFileName != null) {
+            formatFileName(patch.modifiedFileName, "+++", ps)
         }
         val handler = MyReplacementsHandler()
         patch.acceptReplacementHandler(handler)

@@ -16,12 +16,17 @@
 package org.tinygears.tinydiff.util
 
 import java.io.InputStream
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 import kotlin.io.path.inputStream
 
 internal fun readSequence(fileName: String): List<String> {
-    Paths.get(fileName).inputStream().use { `is` -> return readSequence(`is`) }
+    return readSequence(Paths.get(fileName))
+}
+
+internal fun readSequence(file: Path): List<String> {
+    file.inputStream().use { `is` -> return readSequence(`is`) }
 }
 
 internal fun readSequence(`is`: InputStream): List<String> {
