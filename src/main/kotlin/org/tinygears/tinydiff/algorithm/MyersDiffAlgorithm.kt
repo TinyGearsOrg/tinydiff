@@ -259,7 +259,7 @@ internal class MyersDiffAlgorithm<T> : DiffAlgorithm<T> {
                             ++i
                             ++j
                         } else {
-                            if (i < end1 && end1 - start1 > end2 - start2) {
+                            if (end1 - i > end2 - j) {
                                 editScript.appendDelete(originalSequenceA[i])
                                 ++i
                             } else {
