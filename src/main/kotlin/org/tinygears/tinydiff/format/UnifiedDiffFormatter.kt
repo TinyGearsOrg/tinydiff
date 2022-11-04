@@ -148,7 +148,7 @@ internal class UnifiedDiffFormatter constructor(private val ps:      PrintStream
             addedContext = 0
         }
 
-        override fun handleKeep(origObj: String?, newObj: String?) {
+        override fun handleKeep(origObj: String?, modifiedObj: String?) {
             if (origObj == null) {
                 return
             }

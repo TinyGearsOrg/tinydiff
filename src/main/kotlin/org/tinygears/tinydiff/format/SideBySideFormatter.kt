@@ -94,8 +94,8 @@ internal class SideBySideFormatter constructor(private val ps:         PrintStre
             }
         }
 
-        override fun handleKeep(origObj: String?, newObj: String?) {
-            if (origObj == null || newObj == null) {
+        override fun handleKeep(origObj: String?, modifiedObj: String?) {
+            if (origObj == null || modifiedObj == null) {
                 return
             }
             val origObjWithoutCRLF = removeCRLF(origObj)
@@ -104,7 +104,7 @@ internal class SideBySideFormatter constructor(private val ps:         PrintStre
             ps.print(getSpaces(columnWidth - getLength(trimmedOrigObj)))
             printSeparator(ps, ' ')
 
-            val newObjWithoutCRLF = removeCRLF(newObj)
+            val newObjWithoutCRLF = removeCRLF(modifiedObj)
             val trimmedNewObj     = rightTrim(newObjWithoutCRLF)
 
             ps.println(trimmedNewObj)

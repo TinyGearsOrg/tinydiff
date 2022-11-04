@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Thomas Neidhart.
+ * Copyright 2012 Thomas Neidhart.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ internal fun readSequence(fileName: String): List<String> {
     return readSequence(Paths.get(fileName))
 }
 
-internal fun readSequence(file: Path): List<String> {
-    file.inputStream().use { `is` -> return readSequence(`is`) }
+internal fun readSequence(path: Path): List<String> {
+    path.inputStream().use { `is` -> return readSequence(`is`) }
 }
 
 internal fun readSequence(`is`: InputStream): List<String> {

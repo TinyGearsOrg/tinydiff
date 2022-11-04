@@ -64,7 +64,7 @@ internal class EditScriptFormatter constructor(private val ps: PrintStream): Pat
             lineNumber += skipped + from.size
         }
 
-        override fun handleKeep(origObj: String?, newObj: String?) {}
+        override fun handleKeep(origObj: String?, modifiedObj: String?) {}
     }
 
     private inner class EditScriptReplacementsHandler(private var inputLine: Int) : ReplacementsHandler<String> {
@@ -112,6 +112,6 @@ internal class EditScriptFormatter constructor(private val ps: PrintStream): Pat
             ps.println('.')
         }
 
-        override fun handleKeep(origObj: String?, newObj: String?) {}
+        override fun handleKeep(origObj: String?, modifiedObj: String?) {}
     }
 }
