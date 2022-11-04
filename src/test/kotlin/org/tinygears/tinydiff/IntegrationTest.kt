@@ -37,6 +37,8 @@ class IntegrationTest {
     @ParameterizedTest
     @MethodSource("integrationTests")
     fun integrationTest(path: Path) {
+        val testCase = path.name
+
         val patch = TinyDiff.diff(path, "a.txt", "b.txt")
 
         val fileResult = path.resolve("output.txt")
@@ -44,22 +46,22 @@ class IntegrationTest {
             patch.apply(path, os)
         }
 
-        assertEquals(path.resolve("b.txt"), fileResult)
+        assertEquals(testCase, path.resolve("b.txt"), fileResult)
 
         val actualPatch = path.resolve("actual.patch")
         actualPatch.outputStream().use { os ->
             unifiedDiff(os).format(patch)
         }
 
-        val expectedPatch = path.resolve("test.patch")
-        assertEquals(expectedPatch, actualPatch)
+        val expectedPatch = path.resolve("expected.patch")
+        assertEquals(testCase, expectedPatch, actualPatch)
     }
 
-    private fun assertEquals(fileA: Path, fileB: Path) {
+    private fun assertEquals(testCase: String, fileA: Path, fileB: Path) {
         val contentA = fileA.readText()
         val contentB = fileB.readText()
 
-        assertEquals(contentB, contentA, "contents of file $fileA $fileB are not equal")
+        assertEquals(contentB, contentA, "$testCase: contents of file $fileA $fileB are not equal")
     }
 
     companion object {
@@ -67,7 +69,7 @@ class IntegrationTest {
 
         @JvmStatic
         fun integrationTests(): List<Arguments> {
-            val markerFile  = IntegrationTest::class.java.getResource("/tests/marker.txt")!!.file
+            val markerFile  = IntegrationTest::class.java.getResource("/integration/marker.txt")!!.file
             val baseTestDir = Paths.get(markerFile).parent
 
             val testDirectories = Files.find(baseTestDir, Int.MAX_VALUE, TEST_DIR)
