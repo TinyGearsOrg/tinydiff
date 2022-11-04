@@ -20,11 +20,11 @@ import org.tinygears.tinydiff.algorithm.EditScript
 import org.tinygears.tinydiff.algorithm.ReplacementsFinder
 import org.tinygears.tinydiff.algorithm.ReplacementsHandler
 import org.tinygears.tinydiff.format.OutputReplacementsHandler
+import org.tinygears.tinydiff.format.UnifiedDiffFormatter
 import org.tinygears.tinydiff.util.readSequence
 import java.io.*
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.regex.Pattern
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
@@ -87,76 +87,9 @@ data class Patch internal constructor(        val originalFileName: String?,
     }
 
     companion object {
-        private val UNIFIED_FORMAT_PATTERN = Pattern.compile("^@@ \\-(\\d+)\\,(\\d+) \\+(\\d+)\\,(\\d+) @@$")
-
-        fun loadFrom(fileName: String): Patch {
-            BufferedReader(FileReader(fileName)).use { reader ->
-                var lineNumber = 1
-                val script = EditScript.empty<String>()
-                var line: String?
-
-                var origFileName: String? = null
-                var newFileName: String?  = null
-
-                var pendingCommand = 'X'
-                var pendingLine: String? = null
-
-                val handlePendingCommand: (Boolean) -> Unit = { addNewLine ->
-                    if (pendingLine != null) {
-                        if (addNewLine) {
-                            pendingLine += '\n'
-                        }
-
-                        when (pendingCommand) {
-                            'I' -> script.appendInsert(pendingLine!!)
-                            'D' -> script.appendDelete(pendingLine!!)
-                            'K' -> script.appendKeep(pendingLine!!)
-                            else -> error("unexpected command $pendingCommand")
-                        }
-
-                        pendingCommand = 'X'
-                        pendingLine = null
-                    }
-                }
-
-                while (reader.readLine().also { line = it } != null) {
-                    val currentLine = line!!
-
-                    if (currentLine.startsWith("+++")) {
-                        newFileName = currentLine.substring(4).split("\\s+".toRegex())[0]
-                    } else if (currentLine.startsWith("---")) {
-                        origFileName = currentLine.substring(4).split("\\s+".toRegex())[0]
-                    } else if (currentLine.startsWith("\\")) {
-                        handlePendingCommand(false)
-                    } else if (currentLine.startsWith("+")) {
-                        handlePendingCommand(true)
-                        pendingCommand = 'I'
-                        pendingLine = currentLine.substring(1)
-                    } else if (currentLine.startsWith("-")) {
-                        handlePendingCommand(true)
-                        pendingCommand = 'D'
-                        pendingLine = currentLine.substring(1)
-                        lineNumber++
-                    } else if (currentLine.startsWith("@@")) {
-                        handlePendingCommand(true)
-                        val m = UNIFIED_FORMAT_PATTERN.matcher(currentLine)
-                        if (m.matches()) {
-                            val origStart = Integer.valueOf(m.group(1))
-                            while (lineNumber < origStart) {
-                                script.appendKeep(null)
-                                lineNumber++
-                            }
-                        }
-                    } else {
-                        handlePendingCommand(true)
-
-                        pendingCommand = 'K'
-                        pendingLine = currentLine.substring(1)
-
-                        lineNumber++
-                    }
-                }
-                return Patch(origFileName, newFileName, script)
+        fun loadUnified(fileName: String): Patch {
+            return Paths.get(fileName).inputStream().use { `is` ->
+                UnifiedDiffFormatter(System.out, 3).parse(`is`)
             }
         }
     }

@@ -16,11 +16,15 @@
 package org.tinygears.tinydiff.format
 
 import org.tinygears.tinydiff.Patch
-import java.io.File
-import java.io.OutputStream
-import java.io.PrintStream
+import org.tinygears.tinydiff.algorithm.*
+import org.tinygears.tinydiff.algorithm.EditCommand
+import org.tinygears.tinydiff.algorithm.EditScript
+import org.tinygears.tinydiff.algorithm.InsertCommand
+import org.tinygears.tinydiff.algorithm.KeepCommand
+import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.regex.Pattern
 
 /** The default number of context lines. */
 private const val DEFAULT_CONTEXT_LINES = 3
@@ -78,8 +82,86 @@ internal class UnifiedDiffFormatter constructor(private val ps:      PrintStream
         ps.println()
     }
 
+    fun parse(`is`: InputStream): Patch {
+        BufferedReader(InputStreamReader(`is`)).use { reader ->
+            val script = EditScript.empty<String>()
+
+            var origFile:      String? = null
+            var modifiedFile:  String? = null
+
+            var pendingCommand: EditCommand<String>? = null
+
+            val handlePendingCommand: (Boolean) -> Unit = { addNewLine ->
+                if (pendingCommand != null) {
+                    var command = pendingCommand!!
+                    if (addNewLine) {
+                        command = when (command) {
+                            is KeepCommand   -> {
+                                val origObj     = command.origObj
+                                val modifiedObj = command.modifiedObj
+                                command.copy(origObj = origObj?.plus("\n"), modifiedObj = modifiedObj?.plus("\n"))
+                            }
+                            is InsertCommand -> command.copy(obj = command.obj + '\n')
+                            is DeleteCommand -> command.copy(obj = command.obj + '\n')
+                            else -> error("unexpected command '$command'")
+                        }
+                    }
+
+                    script.appendCommand(command)
+                    pendingCommand = null
+                }
+            }
+
+            // Suppress unused variable lineNumber as the kotlin compiler
+            // gets confused by the call to error in the if branch that
+            // accesses the variable.
+            @Suppress("UNUSED_VARIABLE")
+            var lineNumber = 1
+            for (line in reader.lines()) {
+                if (line.startsWith("+++")) {
+                    modifiedFile = line.substring(4).split("\\s+".toRegex())[0]
+                } else if (line.startsWith("---")) {
+                    origFile = line.substring(4).split("\\s+".toRegex())[0]
+                } else if (line.startsWith("+")) {
+                    handlePendingCommand(true)
+                    pendingCommand = InsertCommand(line.substring(1))
+                } else if (line.startsWith("-")) {
+                    handlePendingCommand(true)
+                    pendingCommand = DeleteCommand(line.substring(1))
+                    @Suppress("UNUSED_CHANGED_VALUE")
+                    lineNumber++
+                } else if (line.startsWith("@@")) {
+                    handlePendingCommand(true)
+                    val m = SYNC_PATTERN.matcher(line)
+                    if (m.matches()) {
+                        val origStart = m.group(1).toInt()
+                        while (lineNumber < origStart) {
+                            script.appendKeep(null)
+                            lineNumber++
+                        }
+                    } else {
+                        error("failed to parse sync line: '$line'")
+                    }
+                } else if (line.startsWith("\\")) {
+                    handlePendingCommand(false)
+                } else {
+                    handlePendingCommand(true)
+                    pendingCommand = KeepCommand(line.substring(1))
+                    @Suppress("UNUSED_CHANGED_VALUE")
+                    lineNumber++
+                }
+            }
+
+            // add the last pending command if there is one.
+            handlePendingCommand(true)
+
+            return Patch(origFile, modifiedFile, script)
+        }
+    }
+
     companion object {
-        private const val NO_NEWLINE = "\\ No newline at end of file"
+        private       val SYNC_PATTERN = Pattern.compile("^@@ \\-(\\d+)\\,(\\d+) \\+(\\d+)\\,(\\d+) @@$")
+        private const val NO_NEWLINE   = "\\ No newline at end of file"
     }
 
     private inner class MyReplacementsHandler: OutputReplacementsHandler() {

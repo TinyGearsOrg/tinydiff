@@ -47,6 +47,18 @@ internal data class EditScript<T> constructor(private val commands: MutableList<
         get() = commands.size
 
     /**
+     * Add a command to the script.
+     * @param command  command to be added
+     */
+    fun appendCommand(command: EditCommand<T>) {
+        when (command) {
+            is KeepCommand -> lcsLength++
+            else           -> modifications++
+        }
+        commands.add(command)
+    }
+
+    /**
      * Add a keep command to the script.
      * @param obj  object to be kept, may be null
      */
