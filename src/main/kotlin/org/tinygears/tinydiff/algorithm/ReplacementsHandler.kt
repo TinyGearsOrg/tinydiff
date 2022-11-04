@@ -20,7 +20,7 @@ package org.tinygears.tinydiff.algorithm
  *
  * @see ReplacementsFinder
  */
-internal interface ReplacementsHandler<T> {
+interface ReplacementsHandler<T> {
     /**
      * Handle two synchronized sequences.
      *

@@ -20,7 +20,7 @@ import org.tinygears.tinydiff.transform.Transformer
 /**
  * A visitor interface to walk through [edit scripts][EditScript].
  */
-internal interface CommandVisitor<T> {
+interface CommandVisitor<T> {
     /**
      * Method called before the first command.
      */

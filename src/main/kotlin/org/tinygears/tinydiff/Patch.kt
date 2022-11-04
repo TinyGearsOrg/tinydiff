@@ -32,7 +32,7 @@ data class Patch internal constructor(        val originalFileName: String?,
                                               val modifiedFileName: String?,
                                       private val editScript:       EditScript<String>) {
 
-    internal fun accept(visitor: CommandVisitor<String>) {
+    fun accept(visitor: CommandVisitor<String>) {
         editScript.accept(visitor)
     }
 
@@ -40,7 +40,7 @@ data class Patch internal constructor(        val originalFileName: String?,
         editScript.acceptReverse(visitor)
     }
 
-    internal fun acceptReplacementHandler(handler: ReplacementsHandler<String>) {
+    fun acceptReplacementHandler(handler: ReplacementsHandler<String>) {
         editScript.accept(ReplacementsFinder(handler))
     }
 
