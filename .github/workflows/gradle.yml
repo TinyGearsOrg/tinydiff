@@ -38,7 +38,7 @@ jobs:
       - name: Generate subject
         id: hash
         run: |
-          echo "hash-${{ matrix.java-version }}=$(sha256sum ... | base64 -w0)" >> "$GITHUB_OUTPUT"
+          echo "hash-${{ matrix.java-version }}=$(sha256sum ./build/libs/* | base64 -w0)" >> "$GITHUB_OUTPUT"
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
