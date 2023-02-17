@@ -11,14 +11,13 @@ on:
 
 jobs:
   build:
-    outputs:
-      hashes: ${{ steps.hash.outputs.hashes }}
-
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
         java-version: [11, 17]
+
+    outputs:
         hash-11: ${{ steps.hash.outputs.hash-11 }}
         hash-17: ${{ steps.hash.outputs.hash-17 }}
 
