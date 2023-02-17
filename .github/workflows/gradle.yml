@@ -13,36 +13,36 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        java-version: [11, 17]
-
     outputs:
-        hash-11: ${{ steps.hash.outputs.hash-11 }}
-        hash-17: ${{ steps.hash.outputs.hash-17 }}
+      hashes: ${{ steps.hash.outputs.hashes }}
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up JDK ${{ matrix.java-version }}
+
+      - name: Set up JDK 11
         uses: actions/setup-java@v3
         with:
-          java-version: ${{ matrix.java-version }}
+          java-version: '11'
           distribution: 'temurin'
+
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v1
+
       - name: Build with Gradle
         id:   build
         uses: gradle/gradle-build-action@v2.3.3
         with:
           arguments: build
+
       - name: Generate subject
         id: hash
         run: |
-          echo "hash-${{ matrix.java-version }}=$(sha256sum ./build/libs/* | base64 -w0)" >> "$GITHUB_OUTPUT"
+          echo "hashes=$(sha256sum ./build/libs/* | base64 -w0)" >> "$GITHUB_OUTPUT"
+          
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: gradle-build-outputs-${{ matrix.java-version }}
+          name: gradle-build-outputs
           path: ./build/libs
           if-no-files-found: error
 
@@ -55,5 +55,5 @@ jobs:
       contents: write
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.4.0
     with:
-      base64-subjects: "${{ needs.build.outputs[format('hash-{0}', matrix.java-version)] }}"
+      base64-subjects: "${{ needs.build.outputs.hashes }}"
       upload-assets: true # Optional: Upload to a new release
