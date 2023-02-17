@@ -11,6 +11,9 @@ on:
 
 jobs:
   build:
+    outputs:
+      hashes: ${{ steps.hash.outputs.hashes }}
+
     runs-on: ubuntu-latest
 
     strategy:
@@ -27,34 +30,53 @@ jobs:
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v1
       - name: Build with Gradle
+        id:   build
         uses: gradle/gradle-build-action@v2.3.3
         with:
           arguments: build
+      - name: Generate subject
+        id: hash
+        run: |
+          echo "hashes=$(sha256sum ./build/libs/* | base64 -w0)" >> "$GITHUB_OUTPUT"
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: jar-${{ matrix.java-version }}
-          path: build/libs
+          name: gradle-build-outputs-java-${{ matrix.java-version }}
+          path: ./build/libs
+          if-no-files-found: error
 
-  generate-provenance:
-    needs: build
-    name: Generate build provenance
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # ratchet:actions/download-artifact@v3.0.2
-        with:
-          path: artifact/
+  # slsa-github-generator
+  provenance:
+    needs: [build]
+    permissions:
+      actions: read
+      id-token: write
+      contents: write
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.4.0
+    with:
+      base64-subjects: "${{ needs.build.outputs.hashes }}"
+      upload-assets: true # Optional: Upload to a new release
 
-      - name: Generate provenance
-        uses: philips-labs/slsa-provenance-action@752766b8a3b1ebd09d599e163eeec8fa39e677aa # ratchet:philips-labs/slsa-provenance-action@v0.8.0
-        with:
-          command: generate
-          subcommand: files
-          arguments: --artifact-path artifact/ --output-path provenance.json
-
-      - name: Upload provenance
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # ratchet:actions/upload-artifact@v3.1.2
-        with:
-          name: provenance
-          path: provenance.json
+# philips-labs provenance
+#  generate-provenance:
+#    needs: build
+#    name: Generate build provenance
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Download build artifact
+#        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # ratchet:actions/download-artifact@v3.0.2
+#        with:
+#          path: artifact/
+#
+#      - name: Generate provenance
+#        uses: philips-labs/slsa-provenance-action@752766b8a3b1ebd09d599e163eeec8fa39e677aa # ratchet:philips-labs/slsa-provenance-action@v0.8.0
+#        with:
+#          command: generate
+#          subcommand: files
+#          arguments: --artifact-path artifact/ --output-path provenance.json
+#
+#      - name: Upload provenance
+#        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # ratchet:actions/upload-artifact@v3.1.2
+#        with:
+#          name: provenance
+#          path: provenance.json
