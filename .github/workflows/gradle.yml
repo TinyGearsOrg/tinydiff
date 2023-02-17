@@ -19,6 +19,8 @@ jobs:
     strategy:
       matrix:
         java-version: [11, 17]
+        hash-11: ${{ steps.hash.outputs.hash-11 }}
+        hash-17: ${{ steps.hash.outputs.hash-17 }}
 
     steps:
       - uses: actions/checkout@v3
@@ -37,11 +39,11 @@ jobs:
       - name: Generate subject
         id: hash
         run: |
-          echo "hashes=$(sha256sum ./build/libs/* | base64 -w0)" >> "$GITHUB_OUTPUT"
+          echo "hash-${{ matrix.java-version }}=$(sha256sum ... | base64 -w0)" >> "$GITHUB_OUTPUT"
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: gradle-build-outputs-java-${{ matrix.java-version }}
+          name: gradle-build-outputs-${{ matrix.java-version }}
           path: ./build/libs
           if-no-files-found: error
 
@@ -54,29 +56,5 @@ jobs:
       contents: write
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.4.0
     with:
-      base64-subjects: "${{ needs.build.outputs.hashes }}"
+      base64-subjects: "${{ needs.build.outputs[format('hash-{0}', matrix.java-version)] }}"
       upload-assets: true # Optional: Upload to a new release
-
-# philips-labs provenance
-#  generate-provenance:
-#    needs: build
-#    name: Generate build provenance
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Download build artifact
-#        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # ratchet:actions/download-artifact@v3.0.2
-#        with:
-#          path: artifact/
-#
-#      - name: Generate provenance
-#        uses: philips-labs/slsa-provenance-action@752766b8a3b1ebd09d599e163eeec8fa39e677aa # ratchet:philips-labs/slsa-provenance-action@v0.8.0
-#        with:
-#          command: generate
-#          subcommand: files
-#          arguments: --artifact-path artifact/ --output-path provenance.json
-#
-#      - name: Upload provenance
-#        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # ratchet:actions/upload-artifact@v3.1.2
-#        with:
-#          name: provenance
-#          path: provenance.json
